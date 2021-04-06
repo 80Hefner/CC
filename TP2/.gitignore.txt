@@ -1,2 +1,6 @@
 /TP2/.idea
 /TP2/out
+/TP2/TP2.iml
+\TP2\.idea
+\TP2\.idea
+\TP2\TP2.iml
