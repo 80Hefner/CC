@@ -1,2 +1,2 @@
-/.idea
-/out
+/TP2/.idea
+/TP2/out
