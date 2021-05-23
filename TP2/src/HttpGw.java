@@ -1,35 +1,25 @@
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
-import java.util.Scanner;
-
+import java.util.Map;
 
 public class HttpGw {
-
-
+    private Map<FastFileSrv> fast_files;
+    
     public static void main(String[] args) throws IOException {
-        Scanner sc = new Scanner(System.in);
-        //byte[] buffer = new byte[1024];
         InetAddress hostname = InetAddress.getLocalHost();
         System.out.println(hostname.toString());
-        int port = 8080;
-        DatagramSocket s = new DatagramSocket();
 
+        ServerSocket server_socket = new ServerSocket(8080);
 
         while(true){
-            System.out.println("Introduce message to send: ");
-            String input = sc.nextLine();
-            byte[] ibytes = input.getBytes();
-            Packet packet = new Packet(ibytes);
-            byte[] pbytes = packet.serialize();
-
-            DatagramPacket p = new DatagramPacket(pbytes, pbytes.length, hostname, port);
-            System.out.println(p.toString());
-            try {
-                s.send(p);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            Socket socket = server_socket.accept();
+            Thread worker = new Thread(new HttpGwWorker(socket));
+            worker.start();
         }
+
+
+         //server_socket.close();
+
 
 //        DatagramPacket response = new DatagramPacket(buffer, buffer.length);
 //        s.receive(response);
@@ -37,5 +27,20 @@ public class HttpGw {
 //        String quote = new String(buffer, 0, response.getLength());
 //
 //        System.out.println(quote);
+
+
     }
 }
+
+
+// byte[] ibytes = input.getBytes();
+//             Packet packet = new Packet(ibytes);
+//             byte[] pbytes = packet.serialize();
+
+//             DatagramPacket p = new DatagramPacket(pbytes, pbytes.length, hostname, port);
+//             System.out.println(p.toString());
+//             try {
+//                 udp_socket.send(p);
+//             } catch (IOException e) {
+//                 e.printStackTrace();
+//             }
