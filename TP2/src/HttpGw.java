@@ -1,19 +1,33 @@
 import java.io.*;
 import java.net.*;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HttpGw {
-    private Map<FastFileSrv> fast_files;
-    
+
     public static void main(String[] args) throws IOException {
         InetAddress hostname = InetAddress.getLocalHost();
-        System.out.println(hostname.toString());
+        System.out.println(hostname.getHostAddress());
+
+        List<FastFileSrv> fast_files = new ArrayList<>();
 
         ServerSocket server_socket = new ServerSocket(8080);
 
+        // Establish UDP connection
+        byte[] buf = new byte[4096];
+        DatagramSocket data_socket = new DatagramSocket(8888);
+        DatagramPacket data_packet = new DatagramPacket(buf, buf.length);
+        data_socket.receive(data_packet);
+
+        InetAddress address = data_packet.getAddress();
+        System.out.println("adasfra: " + address);
+        data_packet = new DatagramPacket(buf, buf.length, data_packet.getAddress(), data_packet.getPort());
+        data_socket.send(data_packet);
+
+        // TCP connection
         while(true){
             Socket socket = server_socket.accept();
-            Thread worker = new Thread(new HttpGwWorker(socket));
+            Thread worker = new Thread(new HttpGwWorker(socket, address, fast_files));
             worker.start();
         }
 
