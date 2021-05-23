@@ -3,15 +3,15 @@ import java.net.*;
 import java.util.Scanner;
 
 
-public class Cliente{
+public class HttpGw {
 
 
-    public static void main(String[] args) throws SocketException, UnknownHostException {
+    public static void main(String[] args) throws IOException {
         Scanner sc = new Scanner(System.in);
         //byte[] buffer = new byte[1024];
         InetAddress hostname = InetAddress.getLocalHost();
         System.out.println(hostname.toString());
-        int port = 80;
+        int port = 8080;
         DatagramSocket s = new DatagramSocket();
 
 
@@ -19,7 +19,10 @@ public class Cliente{
             System.out.println("Introduce message to send: ");
             String input = sc.nextLine();
             byte[] ibytes = input.getBytes();
-            DatagramPacket p = new DatagramPacket(ibytes, ibytes.length,hostname,port);
+            Packet packet = new Packet(ibytes);
+            byte[] pbytes = packet.serialize();
+
+            DatagramPacket p = new DatagramPacket(pbytes, pbytes.length, hostname, port);
             System.out.println(p.toString());
             try {
                 s.send(p);
