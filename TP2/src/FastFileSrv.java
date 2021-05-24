@@ -14,7 +14,7 @@ public class FastFileSrv {
         //Establish connection with HttpGw
         byte[] buf = Serializer.Serialize_String("start connection");
         DatagramPacket p = new DatagramPacket(buf, buf.length,
-                self_address, port);
+                address_gateway, port);
         data_socket1.send(p);
 
         // Wait for HttpGw response
