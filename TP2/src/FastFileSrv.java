@@ -8,12 +8,13 @@ public class FastFileSrv {
         DatagramSocket data_socket1 = new DatagramSocket();
         InetAddress self_address = InetAddress.getLocalHost();
         InetAddress address_gateway = InetAddress.getByName(args[0]);
+        int port = Integer.parseInt(args[2]);
         System.out.println("address: " + address_gateway);
 
         //Establish connection with HttpGw
         byte[] buf = Serializer.Serialize_String("start connection");
         DatagramPacket p = new DatagramPacket(buf, buf.length,
-                address_gateway, HttpGw.Default_UDP_Port);
+                address_gateway, port);
         data_socket1.send(p);
 
         // Wait for HttpGw response
@@ -21,7 +22,7 @@ public class FastFileSrv {
         data_socket1.receive(p);
 
         // Connect to given port
-        int port = Serializer.Deserialize_Int(p.getData());
+        port = Serializer.Deserialize_Int(p.getData());
         System.out.println("FastFileSrv connected. Port " + port);
         // Create thread to send beacon packets to HttpGw
         Thread beacon_worker = new Thread(new FastFileSrvBeacon(data_socket1, address_gateway));
