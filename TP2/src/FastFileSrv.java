@@ -10,10 +10,12 @@ public class FastFileSrv {
         System.out.println("address: " + self_address);
 
         //Establish connection with HttpGw
+        System.out.println("Cheguei aqui");
         byte[] buf = Serializer.Serialize_String("start connection");
         DatagramPacket p = new DatagramPacket(buf, buf.length,
                 self_address, HttpGw.Default_UDP_Port);
         data_socket1.send(p);
+        System.out.println("Enviei");
 
         // Wait for HttpGw response
         p = new DatagramPacket(new byte[4096], 4096);
