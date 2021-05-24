@@ -25,12 +25,13 @@ public class UDPListener implements Runnable {
                 // Parse packet data
                 String message = Serializer.Deserialize_String(data_packet.getData());
                 InetAddress address = data_packet.getAddress();
+                System.out.println(address);
                 int port = data_packet.getPort();
                 System.out.println(port);
                 if (message.equals("start connection")) {
                     System.out.println("Conexão UDP recebida");
                     // Establish UDP connection with FastFileSrv
-                    HttpGw.fast_files.put(address, new FastFileSrvInfo(HttpGw.Default_UDP_Port, 0));
+                    HttpGw.fast_files.put(address, new FastFileSrvInfo(port, 0));
                     System.out.println("UDP Listener: FastFileSrv with address " + address + " connected to HttpGw");
 
                     // ACK

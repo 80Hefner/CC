@@ -5,17 +5,15 @@ import java.nio.file.Paths;
 
 public class FastFileSrv {
     public static void main(String[] args) throws IOException, InterruptedException {
-        int port = Integer.parseInt(args[1]);
-        DatagramSocket data_socket1 = new DatagramSocket(port);
-        InetAddress self_address = InetAddress.getLocalHost();
-        System.out.println(args[0]);
-        System.out.println(args[1]);
+        int port = Integer.parseInt(args[1]); // porta à qual se pretende ligar
         InetAddress address_gateway = InetAddress.getByName(args[0]);
-        System.out.println(port);
+        InetAddress self_address = InetAddress.getLocalHost(); // meter no pacote e enviar ao gateway para ele registar
+        DatagramSocket data_socket1 = new DatagramSocket(port);
         System.out.println("address connecting to gateway: " + self_address);
 
         //Establish connection with HttpGw
         byte[] buf = Serializer.Serialize_String("start connection");
+        // Inserir endereço do servidor que se ira ligar ao gateway
         DatagramPacket p = new DatagramPacket(buf, buf.length,
                 address_gateway, port);
         data_socket1.send(p);
