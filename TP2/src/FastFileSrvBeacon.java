@@ -5,12 +5,12 @@ import java.net.InetAddress;
 
 public class FastFileSrvBeacon implements Runnable {
     private final DatagramSocket data_socket;
-    private final InetAddress self_address;
+    private final InetAddress address_gateway;
     private final int beacon_interval_time = 5000;
 
-    public FastFileSrvBeacon(DatagramSocket data_socket, InetAddress self_address) {
+    public FastFileSrvBeacon(DatagramSocket data_socket, InetAddress address_gateway) {
         this.data_socket = data_socket;
-        this.self_address = self_address;
+        this.address_gateway = address_gateway;
     }
 
     public void run() {
@@ -19,7 +19,7 @@ public class FastFileSrvBeacon implements Runnable {
                 Thread.sleep(beacon_interval_time);
 
                 byte[] buf = Serializer.Serialize_String("beacon");
-                DatagramPacket packet = new DatagramPacket(buf, buf.length, self_address, HttpGw.Default_UDP_Port);
+                DatagramPacket packet = new DatagramPacket(buf, buf.length, address_gateway, HttpGw.Default_UDP_Port);
                 data_socket.send(packet);
                 System.out.println("Sent beacon packet on port " + HttpGw.Default_UDP_Port);
             }

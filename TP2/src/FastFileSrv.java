@@ -7,14 +7,14 @@ public class FastFileSrv {
     public static void main(String[] args) throws IOException, InterruptedException {
         DatagramSocket data_socket1 = new DatagramSocket();
         InetAddress self_address = InetAddress.getLocalHost();
-        InetAddress address_to_send_to = InetAddress.getByName(args[0]);
-        System.out.println("address: " + self_address);
+        InetAddress address_gateway = InetAddress.getByName(args[0]);
+        System.out.println("address: " + address_gateway);
 
         //Establish connection with HttpGw
         System.out.println("Cheguei aqui");
         byte[] buf = Serializer.Serialize_String("start connection");
         DatagramPacket p = new DatagramPacket(buf, buf.length,
-                address_to_send_to, HttpGw.Default_UDP_Port);
+                address_gateway, HttpGw.Default_UDP_Port);
         data_socket1.send(p);
         System.out.println("Enviei");
 
@@ -28,7 +28,7 @@ public class FastFileSrv {
         System.out.println("FastFileSrv connected. Port " + port);
         System.out.println("Devia dar port aqui");
         // Create thread to send beacon packets to HttpGw
-        Thread beacon_worker = new Thread(new FastFileSrvBeacon(data_socket1, self_address));
+        Thread beacon_worker = new Thread(new FastFileSrvBeacon(data_socket1, address_gateway));
         beacon_worker.start();
 
         // Cycle to wait for packets from HttpGwWorker
