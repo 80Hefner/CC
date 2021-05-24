@@ -6,8 +6,7 @@ import java.nio.file.Paths;
 public class FastFileSrv {
     public static void main(String[] args) throws IOException, InterruptedException {
         int port = Integer.parseInt(args[1]); // porta à qual se pretende ligar
-        byte[] add_gateway = Serializer.Serialize_String(args[0]);
-        InetAddress address_gateway = InetAddress.getByAddress(add_gateway);
+        InetAddress address_gateway = InetAddress.getByName(args[0]);
         InetAddress self_address = InetAddress.getLocalHost(); // meter no pacote e enviar ao gateway para ele registar
         DatagramSocket data_socket1 = new DatagramSocket(port);
         System.out.println("address connecting to gateway: " + self_address);
