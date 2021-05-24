@@ -26,7 +26,6 @@ public class UDPListener implements Runnable {
                 // Parse packet data
                 String message = Serializer.Deserialize_String(data_packet.getData());
                 InetAddress address = data_packet.getAddress();
-                System.out.println("InetAddress: " + address);
                 if (message.equals("start connection")) {
                     // Establish UDP connection with FastFileSrv
                     int port = HttpGw.NextPort++;
@@ -37,7 +36,6 @@ public class UDPListener implements Runnable {
                     byte[] send_buf = Serializer.Serialize_Int(port);
                     data_packet = new DatagramPacket(send_buf, send_buf.length, data_packet.getAddress(), data_packet.getPort());
                     data_socket.send(data_packet);
-                    System.out.println("Gateway enviou pacote de resposta");
                 }
                 else if (message.equals("beacon")) {
                     // Process beacon packet
