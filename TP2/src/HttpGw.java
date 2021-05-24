@@ -6,7 +6,6 @@ public class HttpGw {
 
     public static ConcurrentHashMap<InetAddress, FastFileSrvInfo> fast_files;
     public static int Default_UDP_Port = 8888;
-    public static int NextPort = 8889;
 
     public static void main(String[] args) throws IOException, InterruptedException {
         System.out.println(InetAddress.getLocalHost());
