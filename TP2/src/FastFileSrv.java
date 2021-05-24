@@ -5,12 +5,12 @@ import java.nio.file.Paths;
 
 public class FastFileSrv {
     public static void main(String[] args) throws IOException, InterruptedException {
-        DatagramSocket data_socket1 = new DatagramSocket();
+        int port = Integer.parseInt(args[1]);
+        DatagramSocket data_socket1 = new DatagramSocket(port);
         InetAddress self_address = InetAddress.getLocalHost();
         System.out.println(args[0]);
         System.out.println(args[1]);
         InetAddress address_gateway = InetAddress.getByName(args[0]);
-        int port = Integer.parseInt(args[1]);
         System.out.println(port);
         System.out.println("address connecting to gateway: " + self_address);
 
