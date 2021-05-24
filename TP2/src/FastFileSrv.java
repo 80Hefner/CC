@@ -8,7 +8,7 @@ public class FastFileSrv {
         DatagramSocket data_socket1 = new DatagramSocket();
         InetAddress self_address = InetAddress.getLocalHost();
         InetAddress address_gateway = InetAddress.getByName(args[0]);
-        int port = Integer.parseInt(args[2]);
+        int port = Integer.parseInt(args[1]);
         System.out.println("address: " + address_gateway);
 
         //Establish connection with HttpGw
