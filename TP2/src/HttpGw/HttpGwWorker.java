@@ -1,21 +1,19 @@
+package HttpGw;
+
+import utils.Serializer;
+
 import java.io.*;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 public class HttpGwWorker implements Runnable {
     private final Socket socket;
-    private final InetAddress fastFileAddress;
     private final BufferedReader dis;
     private final DataOutputStream dos;
-    private List<FastFileSrv> fast_files;
 
-    public HttpGwWorker (Socket socket, InetAddress fastFileAddress, List<FastFileSrv> fast_files) throws IOException {
+    public HttpGwWorker (Socket socket) throws IOException {
         this.socket = socket;
-        this.fastFileAddress = fastFileAddress;
         this.dis = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.dos = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-        this.fast_files = fast_files;
     }
 
     public void run() {
@@ -36,12 +34,12 @@ public class HttpGwWorker implements Runnable {
         System.out.println(file_name);
 
         // Establish connection with FastFileSrv
-        byte[] buf = file_name.getBytes();
         DatagramSocket data_socket;
         DatagramPacket packet;
         try {
             data_socket = new DatagramSocket();
-            packet = new DatagramPacket(buf, buf.length, InetAddress.getByName("localhost"), 8686);
+            byte[] buf = Serializer.Serialize_String(file_name);
+            packet = new DatagramPacket(buf, buf.length, InetAddress.getByName("localhost"), 8889);
 
             // Send request to FastFileSrv
             data_socket.send(packet);
@@ -58,7 +56,4 @@ public class HttpGwWorker implements Runnable {
             e.printStackTrace();
         }
     }
-
-
-
 }

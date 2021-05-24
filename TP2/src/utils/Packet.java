@@ -1,13 +1,14 @@
+package utils;
+
 import java.io.*;
 import java.util.Arrays;
 
-public class Packet implements Serializable{
+public class Packet implements Serializable {
     private int id;
     private int type;
     private String transfer_id;
     private int chunk;
     private byte[] data;
-
 
     public Packet(int id, int type, String transfer_id, int chunk, byte[] data) {
         this.id = id;
