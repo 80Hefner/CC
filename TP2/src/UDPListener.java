@@ -25,6 +25,8 @@ public class UDPListener implements Runnable {
                 // Parse packet data
                 String message = Serializer.Deserialize_String(data_packet.getData());
                 InetAddress address = data_packet.getAddress();
+                int port = data_packet.getPort();
+                System.out.println(port);
                 if (message.equals("start connection")) {
                     System.out.println("Conexão UDP recebida");
                     // Establish UDP connection with FastFileSrv
