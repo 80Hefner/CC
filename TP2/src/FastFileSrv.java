@@ -7,6 +7,8 @@ public class FastFileSrv {
     public static void main(String[] args) throws IOException, InterruptedException {
         DatagramSocket data_socket1 = new DatagramSocket();
         InetAddress self_address = InetAddress.getLocalHost();
+        System.out.println(args[0]);
+        System.out.println(args[1]);
         InetAddress address_gateway = InetAddress.getByName(args[0]);
         System.out.println("address connecting to gateway: " + self_address);
 
