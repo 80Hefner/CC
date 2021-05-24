@@ -10,6 +10,8 @@ public class FastFileSrv {
         System.out.println(args[0]);
         System.out.println(args[1]);
         InetAddress address_gateway = InetAddress.getByName(args[0]);
+        int port = Integer.parseInt(args[1]);
+        System.out.println(port);
         System.out.println("address connecting to gateway: " + self_address);
 
         //Establish connection with HttpGw
