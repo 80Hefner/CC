@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 public class FastFileSrv {
     public static void main(String[] args) throws IOException, InterruptedException {
         DatagramSocket data_socket1 = new DatagramSocket();
-        InetAddress self_address = InetAddress.getByName("localhost");
+        InetAddress self_address = InetAddress.getLocalHost();
         System.out.println("address: " + self_address);
 
         //Establish connection with HttpGw
