@@ -20,11 +20,12 @@ public class FastFileSrv {
         // Wait for HttpGw response
         p = new DatagramPacket(new byte[4096], 4096);
         data_socket1.receive(p);
+        System.out.println("Recebi");
 
         // Connect to given port
         int port = Serializer.Deserialize_Int(p.getData());
         System.out.println("FastFileSrv connected. Port " + port);
-
+        System.out.println("Devia dar port aqui");
         // Create thread to send beacon packets to HttpGw
         Thread beacon_worker = new Thread(new FastFileSrvBeacon(data_socket1, self_address));
         beacon_worker.start();
