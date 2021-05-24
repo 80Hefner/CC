@@ -1,5 +1,3 @@
-package HttpGw;
-
 public class FastFileSrvInfo {
     private final int port;
     private int idle_time;

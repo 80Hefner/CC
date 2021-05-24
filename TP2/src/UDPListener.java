@@ -1,7 +1,3 @@
-package HttpGw;
-
-import utils.Serializer;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -34,7 +30,7 @@ public class UDPListener implements Runnable {
                     // Establish UDP connection with FastFileSrv
                     int port = HttpGw.NextPort++;
                     HttpGw.fast_files.put(address, new FastFileSrvInfo(port, 0));
-                    System.out.println("UDP Listener: FastFileSrv with address " + address + " connected to HttpGw.HttpGw");
+                    System.out.println("UDP Listener: FastFileSrv with address " + address + " connected to HttpGw");
 
                     // ACK
                     byte[] send_buf = Serializer.Serialize_Int(port);

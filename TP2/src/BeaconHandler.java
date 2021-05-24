@@ -1,5 +1,3 @@
-package HttpGw;
-
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 
