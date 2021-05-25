@@ -12,9 +12,18 @@ public class TCPListener implements Runnable {
     public void run() {
         while(true){
             try {
+                // Accept connection from client
                 Socket socket = this.server_socket.accept();
-                Thread worker = new Thread(new HttpGwWorker(socket));
-                worker.start();
+
+                // Create worker for this client and add it to HttpGw database
+                int worker_id = HttpGw.Next_Client_ID++;
+                HttpGwWorker worker = new HttpGwWorker(worker_id, socket);
+                HttpGw.http_workers.put(worker_id, worker);
+
+                // Start worker thread
+                Thread worker_thread = new Thread(worker);
+                worker_thread.start();
+
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -20,28 +20,46 @@ public class UDPListener implements Runnable {
         while(true) {
             try {
                 // Wait for UDP connection from FastFileSrv
-                DatagramPacket data_packet = new DatagramPacket(new byte[4096], 4096);
+                DatagramPacket data_packet = new DatagramPacket(new byte[Packet.Max_Size], Packet.Max_Size);
                 data_socket.receive(data_packet);
-                // Parse packet data
-                String message = Serializer.Deserialize_String(data_packet.getData());
-                InetAddress address = data_packet.getAddress();
-                System.out.println(address);
-                int port = data_packet.getPort();
-                System.out.println(port);
-                if (message.equals("start connection")) {
-                    System.out.println("Conexão UDP recebida");
-                    // Establish UDP connection with FastFileSrv
-                    HttpGw.fast_files.put(address, new FastFileSrvInfo(port, 0));
-                    System.out.println("UDP Listener: FastFileSrv with address " + address + " connected to HttpGw");
+                byte[] buffer = new byte[data_packet.getLength()];
+                System.arraycopy(data_packet.getData(), 0, buffer, 0, data_packet.getLength());
 
-                    // ACK
-                    byte[] send_buf = Serializer.Serialize_Int(HttpGw.Default_UDP_Port);
-                    data_packet = new DatagramPacket(send_buf, send_buf.length, data_packet.getAddress(), data_packet.getPort());
-                    data_socket.send(data_packet);
+                // Parse datagram packet info
+                InetAddress fast_file_address = data_packet.getAddress();
+                int port = data_packet.getPort();
+
+                // Parse packet data
+                Packet packet = Serializer.Deserialize_Packet(buffer);
+                PacketType packet_type = packet.getType();
+
+                if (packet_type == PacketType.CONNECTION) {
+                    System.out.println("Conexão UDP recebida");
+
+                    // Establish UDP connection with FastFileSrv
+                    if (HttpGw.fast_files.containsKey(fast_file_address))
+                        System.out.println("Conexão rejeitada. IP já conectado ao Gateway");
+                    else {
+                        HttpGw.fast_files.put(fast_file_address, new FastFileSrvInfo(port, 0));
+                        System.out.println("UDP Listener: FastFileSrv with address " + fast_file_address + " connected to HttpGw");
+
+                        // Send ACK packet to FastFileSrv
+                        packet = new Packet(-1, PacketType.ACK_CONNECTION, 0, 1, null);
+                        byte[] send_buf = Serializer.Serialize_Packet(packet);
+                        data_packet = new DatagramPacket(send_buf, send_buf.length,
+                                data_packet.getAddress(), data_packet.getPort());
+                        data_socket.send(data_packet);
+                    }
                 }
-                else if (message.equals("beacon")) {
+                else if (packet_type == PacketType.BEACON) {
                     // Process beacon packet
                     beacon_handler.process_packet(data_packet);
+                }
+                else if (packet_type == PacketType.DATA) {
+                    // Process data packet
+                    int packet_id = packet.getId();
+                    HttpGw.http_workers.get(packet_id).Add_Fragment(packet);
+                    HttpGw.http_workers.get(packet_id).Signal_Fragment();
                 }
 
             } catch (IOException e) {

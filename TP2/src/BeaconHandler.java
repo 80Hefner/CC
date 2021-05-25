@@ -11,7 +11,7 @@ public class BeaconHandler implements Runnable {
         FastFileSrvInfo info = HttpGw.fast_files.get(address);
         info.reset_idle_time();
 
-        System.out.println("Received beacon packet from " + address);
+        //System.out.println("Received beacon packet from " + address);
     }
 
     public void run() {

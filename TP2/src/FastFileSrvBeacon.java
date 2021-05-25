@@ -18,10 +18,12 @@ public class FastFileSrvBeacon implements Runnable {
             while (true) {
                 Thread.sleep(beacon_interval_time);
 
-                byte[] buf = Serializer.Serialize_String("beacon");
-                DatagramPacket packet = new DatagramPacket(buf, buf.length, address_gateway, HttpGw.Default_UDP_Port);
-                data_socket.send(packet);
-                System.out.println("Sent beacon packet on port " + HttpGw.Default_UDP_Port);
+                Packet packet = new Packet(-1, PacketType.BEACON, 0, 1, null);
+                byte[] buf = Serializer.Serialize_Packet(packet);
+                DatagramPacket data_packet = new DatagramPacket(buf, buf.length,
+                        address_gateway, HttpGw.Default_UDP_Port);
+                data_socket.send(data_packet);
+                //System.out.println("Sent beacon packet on port " + HttpGw.Default_UDP_Port);
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

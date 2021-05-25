@@ -1,18 +1,27 @@
 import java.io.*;
 import java.util.Arrays;
+import java.util.Comparator;
 
-public class Packet implements Serializable {
-    private int id;
-    private int type;
-    private String transfer_id;
-    private int chunk;
+enum PacketType {
+    BEACON, CONNECTION, ACK_CONNECTION, DATA;
+}
+
+public class Packet implements Serializable, Comparable<Packet> {
+    public static final int Max_Data_Size = 4096;
+    public static final int Header_Size = 16;
+    public static final int Max_Size = Header_Size + Max_Data_Size;
+
+    private int id;  // packet id for defragmentation
+    private PacketType type;  // packet type
+    private int offset;
+    private int fragments;
     private byte[] data;
 
-    public Packet(int id, int type, String transfer_id, int chunk, byte[] data) {
+    public Packet(int id, PacketType type, int offset, int fragments, byte[] data) {
         this.id = id;
         this.type = type;
-        this.transfer_id = transfer_id;
-        this.chunk = chunk;
+        this.offset = offset;
+        this.fragments = fragments;
         this.data = data;
     }
 
@@ -20,21 +29,20 @@ public class Packet implements Serializable {
         this.data = data;
     }
 
-
     public int getId() {
         return id;
     }
 
-    public int getType() {
+    public PacketType getType() {
         return type;
     }
 
-    public String getTransfer_id() {
-        return transfer_id;
+    public int getOffset() {
+        return offset;
     }
 
-    public int getChunk() {
-        return chunk;
+    public int getFragments() {
+        return fragments;
     }
 
     public byte[] getData() {
@@ -46,23 +54,15 @@ public class Packet implements Serializable {
         return "Packet{" +
                 "id=" + id +
                 ", type=" + type +
-                ", transfer_id='" + transfer_id + '\'' +
-                ", chunk=" + chunk +
+                ", offset=" + offset +
+                ", fragments=" + fragments +
                 ", data=" + Arrays.toString(data) +
                 '}';
     }
 
-    public byte[] serialize() throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ObjectOutputStream os = new ObjectOutputStream(out);
-        os.writeObject(this);
-
-        return out.toByteArray();
+    @Override
+    public int compareTo(Packet p) {
+        return this.offset - p.getOffset();
     }
 
-    public static Packet deserialize(byte[] data) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream in = new ByteArrayInputStream(data);
-        ObjectInputStream is = new ObjectInputStream(in);
-        return (Packet) is.readObject();
-    }
 }

@@ -5,13 +5,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HttpGw {
 
     public static ConcurrentHashMap<InetAddress, FastFileSrvInfo> fast_files;
+    public static ConcurrentHashMap<Integer, HttpGwWorker> http_workers;
     public static int Default_UDP_Port = 8888;
+    public static int Next_Client_ID = 0;
 
     public static void main(String[] args) throws IOException, InterruptedException {
         System.out.println(InetAddress.getLocalHost());
 
-        // Initialize fast files array
+        // Initialize fast files and http workers map
         HttpGw.fast_files = new ConcurrentHashMap<>();
+        HttpGw.http_workers = new ConcurrentHashMap<>();
 
         // Create beacon packet handler on UDP connection
         BeaconHandler beacon_handler = new BeaconHandler();
