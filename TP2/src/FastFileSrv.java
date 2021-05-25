@@ -74,8 +74,8 @@ public class FastFileSrv {
                     byte_offset += buf1.length;
                     bytes_left -= buf1.length;
 
-                    //Thread.sleep(1000);   // TODO : APAGAR ISTO
-                }
+                    Thread.sleep(10000);  
+		}
             }
             else {
                 // Create an error packet and send it
