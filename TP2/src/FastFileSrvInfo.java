@@ -1,10 +1,20 @@
 public class FastFileSrvInfo {
     private final int port;
     private int idle_time;
+    private boolean available;
 
     public FastFileSrvInfo(int port, int idle_time) {
         this.port = port;
         this.idle_time = idle_time;
+        this.available = true;
+    }
+
+    public void setAvailability(boolean bool) {
+        this.available = bool;
+    }
+
+    public boolean isAvailable() {
+        return this.available;
     }
 
     public int getPort() {

@@ -3,7 +3,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 enum PacketType {
-    BEACON, CONNECTION, ACK_CONNECTION, DATA;
+    BEACON, CONNECTION, ACK_CONNECTION, DATA, ERROR;
 }
 
 public class Packet implements Serializable, Comparable<Packet> {

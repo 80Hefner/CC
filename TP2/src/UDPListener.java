@@ -15,7 +15,7 @@ public class UDPListener implements Runnable {
 
     public void run() {
 
-        System.out.println("UDP Listener: Listening in UDP 8888");
+        System.out.println("[UDPLISTENER] Listening in UDP " + HttpGw.Default_UDP_Port);
 
         while(true) {
             try {
@@ -34,14 +34,14 @@ public class UDPListener implements Runnable {
                 PacketType packet_type = packet.getType();
 
                 if (packet_type == PacketType.CONNECTION) {
-                    System.out.println("Conexão UDP recebida");
+                    System.out.println("[UDPLISTENER] UDP connection received");
 
                     // Establish UDP connection with FastFileSrv
                     if (HttpGw.fast_files.containsKey(fast_file_address))
-                        System.out.println("Conexão rejeitada. IP já conectado ao Gateway");
+                        System.out.println("[UDPLISTENER] Connection rejected. IP already connected to Gateway");
                     else {
                         HttpGw.fast_files.put(fast_file_address, new FastFileSrvInfo(port, 0));
-                        System.out.println("UDP Listener: FastFileSrv with address " + fast_file_address + " connected to HttpGw");
+                        System.out.println("[UDPLISTENER] FastFileSrv with address " + fast_file_address + " connected to HttpGw");
 
                         // Send ACK packet to FastFileSrv
                         packet = new Packet(-1, PacketType.ACK_CONNECTION, 0, 1, null);
@@ -57,8 +57,16 @@ public class UDPListener implements Runnable {
                 }
                 else if (packet_type == PacketType.DATA) {
                     // Process data packet
+                    System.out.println("[UDPLISTENER] Received packet with file data from " + fast_file_address);
                     int packet_id = packet.getId();
                     HttpGw.http_workers.get(packet_id).Add_Fragment(packet);
+                    HttpGw.http_workers.get(packet_id).Signal_Fragment();
+                }
+                else if (packet_type == PacketType.ERROR) {
+                    // Process data packet
+                    System.out.println("[UDPLISTENER] Received error packet from " + fast_file_address);
+                    int packet_id = packet.getId();
+                    HttpGw.http_workers.get(packet_id).Add_Error_Packet(packet);
                     HttpGw.http_workers.get(packet_id).Signal_Fragment();
                 }
 

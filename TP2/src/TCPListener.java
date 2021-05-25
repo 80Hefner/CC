@@ -14,6 +14,7 @@ public class TCPListener implements Runnable {
             try {
                 // Accept connection from client
                 Socket socket = this.server_socket.accept();
+                System.out.println("[TCPLISTENER] Client with address " + socket.getInetAddress() + " connected.");
 
                 // Create worker for this client and add it to HttpGw database
                 int worker_id = HttpGw.Next_Client_ID++;

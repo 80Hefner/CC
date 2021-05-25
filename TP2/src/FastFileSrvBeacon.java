@@ -23,7 +23,7 @@ public class FastFileSrvBeacon implements Runnable {
                 DatagramPacket data_packet = new DatagramPacket(buf, buf.length,
                         address_gateway, HttpGw.Default_UDP_Port);
                 data_socket.send(data_packet);
-                //System.out.println("Sent beacon packet on port " + HttpGw.Default_UDP_Port);
+                //System.out.println("[FAST_FILE_SRV_BEACON] Sent beacon packet on port " + HttpGw.Default_UDP_Port);
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

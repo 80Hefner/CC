@@ -7,10 +7,12 @@ public class HttpGw {
     public static ConcurrentHashMap<InetAddress, FastFileSrvInfo> fast_files;
     public static ConcurrentHashMap<Integer, HttpGwWorker> http_workers;
     public static int Default_UDP_Port = 8888;
+    public static int Default_TCP_Port = 8080;
     public static int Next_Client_ID = 0;
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        System.out.println(InetAddress.getLocalHost());
+        System.out.println("[HTTPGW] Gateway connected in address: " + InetAddress.getLocalHost() + " in UDP port: " + Default_UDP_Port);
+        System.out.println("[HTTPGW] Gateway connected in address: " + InetAddress.getLocalHost() + " in TCP port: " + Default_TCP_Port);
 
         // Initialize fast files and http workers map
         HttpGw.fast_files = new ConcurrentHashMap<>();
@@ -26,7 +28,7 @@ public class HttpGw {
         udp_listener.start();
 
         // Create server socket for TCP connections
-        ServerSocket server_socket = new ServerSocket(8080);
+        ServerSocket server_socket = new ServerSocket(Default_TCP_Port);
 
         // Create thread to listen TCP connections
         Thread tcp_listener = new Thread(new TCPListener(server_socket));

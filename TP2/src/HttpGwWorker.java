@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 public class HttpGwWorker implements Runnable {
     private final int worker_id;
@@ -13,7 +14,9 @@ public class HttpGwWorker implements Runnable {
     private final ReentrantLock wait_lock;
     private final Condition wait;
     private List<Packet> packet_fragments;
+    private ReentrantLock fragments_lock;
     private int fragments;
+    private boolean error_found;
 
     public HttpGwWorker (int worker_id, Socket socket) throws IOException {
         this.worker_id = worker_id;
@@ -23,7 +26,9 @@ public class HttpGwWorker implements Runnable {
         this.wait_lock = new ReentrantLock();
         this.wait = wait_lock.newCondition();
         this.packet_fragments = new ArrayList<>();
+        this.fragments_lock = new ReentrantLock();
         this.fragments = 0;
+        this.error_found = false;
     }
 
     public void run() {
@@ -41,7 +46,6 @@ public class HttpGwWorker implements Runnable {
 
         // Parse http request to get file name
         String file_name = http_cont.split(" ")[1];
-        System.out.println(file_name);
 
         // Establish connection with FastFileSrv
         DatagramSocket data_socket;
@@ -49,7 +53,14 @@ public class HttpGwWorker implements Runnable {
         Packet packet;
         try {
             data_socket = new DatagramSocket();
-            InetAddress address = HttpGw.fast_files.keySet().iterator().next(); // TODO: escolher melhor o FastFileSrv
+            List<InetAddress> available_addresses = HttpGw.fast_files.entrySet()
+                    .stream()
+                    .filter(e -> e.getValue().isAvailable())
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
+
+            InetAddress address = available_addresses.get(0);
+            HttpGw.fast_files.get(address).setAvailability(false);
 
             // Prepare packet to send to FastFileSrv
             byte[] buf = Serializer.Serialize_String(file_name);
@@ -59,7 +70,7 @@ public class HttpGwWorker implements Runnable {
 
             // Send request to FastFileSrv
             data_socket.send(data_packet);
-            System.out.println("Worker " + worker_id + " sent packet to " + data_packet.getAddress());
+            System.out.println("[WORKER " + worker_id + "] sent packet to " + data_packet.getAddress());
 
             // Wait for response from FastFileSrv
             wait_lock.lock();
@@ -70,32 +81,46 @@ public class HttpGwWorker implements Runnable {
                 wait_lock.unlock();
             }
 
-            // Cycle if packet received is fragmented
-            wait_lock.lock();
-            try {
-                for (int i = 1; i < this.fragments; i++)
-                    wait.await();
-            } finally {
-                wait_lock.unlock();
+            if (!this.error_found) {
+                // Cycle if packet received is fragmented
+                wait_lock.lock();
+                try {
+                    for (int i = 1; i < this.fragments; i++)
+                        wait.await();
+                } finally {
+                    wait_lock.unlock();
+                }
+
+                // Defragment fragments
+                byte[] return_bytes;
+                if (this.packet_fragments.size() > 1)
+                    return_bytes = Defragment_Fragments();
+                else
+                    return_bytes = this.packet_fragments.iterator().next().getData();
+
+                // Send packet data to client
+                System.out.println("[WORKER " + worker_id + "] sending requested file to client " + socket.getInetAddress());
+                dos.write(return_bytes);
+            }
+            else {
+                System.out.println("[WORKER " + worker_id + "] sending error message in a file to client " + socket.getInetAddress());
+                String error_message = Serializer.Deserialize_String(this.packet_fragments.get(0).getData());
+                System.out.println("ERROR: " + error_message);
+                dos.write(Serializer.Serialize_String(error_message));
             }
 
-            // Defragment fragments
-            byte[] return_bytes;
-            if (this.packet_fragments.size() > 1)
-                return_bytes = Defragment_Fragments();
-            else
-                return_bytes = this.packet_fragments.iterator().next().getData();
-
-            // Send packet data to client
-            dos.write(return_bytes);
             dos.flush();
             socket.close();
+
+            // Remove this worker from HttpGw database
+            HttpGw.http_workers.remove(this.worker_id);
+
+            // Set FastFileSrv used as available
+            HttpGw.fast_files.get(address).setAvailability(true);
+
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-
-        // Remove this worker from HttpGw database
-        HttpGw.http_workers.remove(this.worker_id);
     }
 
     public void Signal_Fragment() {
@@ -108,8 +133,26 @@ public class HttpGwWorker implements Runnable {
     }
 
     public void Add_Fragment(Packet fragment) {
-        this.packet_fragments.add(fragment);
-        System.out.println("Worker " + worker_id + " received packet #" + fragment.getOffset()/Packet.Max_Data_Size);
+        fragments_lock.lock();
+        try {
+            this.packet_fragments.add(fragment);
+        } finally {
+            fragments_lock.unlock();
+        }
+
+        System.out.println("[WORKER " + worker_id + "] received packet #" + fragment.getOffset()/Packet.Max_Data_Size);
+    }
+
+    public void Add_Error_Packet(Packet packet) {
+        fragments_lock.lock();
+        try {
+            this.error_found = true;
+            this.packet_fragments.add(0, packet);
+        } finally {
+            fragments_lock.unlock();
+        }
+
+        System.out.println("[WORKER " + worker_id + "] received error packet");
     }
 
     private byte[] Defragment_Fragments() {

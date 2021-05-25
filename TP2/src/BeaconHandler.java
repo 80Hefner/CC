@@ -11,7 +11,7 @@ public class BeaconHandler implements Runnable {
         FastFileSrvInfo info = HttpGw.fast_files.get(address);
         info.reset_idle_time();
 
-        //System.out.println("Received beacon packet from " + address);
+        //System.out.println("[BEACON_HANDLER] Received beacon packet from " + address);
     }
 
     public void run() {
@@ -22,7 +22,7 @@ public class BeaconHandler implements Runnable {
                         .filter(e -> e.getValue().get_idle_time() > max_idle_time)
                         .forEach(e -> {
                             HttpGw.fast_files.remove(e.getKey());
-                            System.out.println("Removed FastFileSrv with address: " + e.getKey() + " due to inactivity.");
+                            System.out.println("[BEACON_HANDLER] Removed FastFileSrv with address: " + e.getKey() + " due to inactivity.");
                         });
 
                 Thread.sleep(check_interval_time);
