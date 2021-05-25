@@ -74,7 +74,7 @@ public class FastFileSrv {
                     byte_offset += buf1.length;
                     bytes_left -= buf1.length;
 
-                    Thread.sleep(10000);  
+                    //Thread.sleep(10000);  
 		}
             }
             else {
