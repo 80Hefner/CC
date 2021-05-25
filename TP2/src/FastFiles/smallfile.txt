@@ -1,0 +1,1 @@
+Este ficheiro de teste serve para demonstrar que é enviado num so pacote.
