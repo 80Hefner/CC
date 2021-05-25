@@ -11,24 +11,18 @@ public class HttpGwWorker implements Runnable {
     private final Socket socket;
     private final BufferedReader dis;
     private final DataOutputStream dos;
-    private final ReentrantLock wait_lock;
-    private final Condition wait;
     private List<Packet> packet_fragments;
     private ReentrantLock fragments_lock;
     private int fragments;
-    private boolean error_found;
 
     public HttpGwWorker (int worker_id, Socket socket) throws IOException {
         this.worker_id = worker_id;
         this.socket = socket;
         this.dis = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.dos = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-        this.wait_lock = new ReentrantLock();
-        this.wait = wait_lock.newCondition();
         this.packet_fragments = new ArrayList<>();
         this.fragments_lock = new ReentrantLock();
         this.fragments = 0;
-        this.error_found = false;
     }
 
     public void run() {
@@ -73,42 +67,55 @@ public class HttpGwWorker implements Runnable {
             System.out.println("[WORKER " + worker_id + "] sent packet to " + data_packet.getAddress());
 
             // Wait for response from FastFileSrv
-            wait_lock.lock();
+/*            wait_lock.lock();
             try {
                 wait.await();
                 this.fragments = this.packet_fragments.get(0).getFragments();
             } finally {
                 wait_lock.unlock();
-            }
-
-            if (!this.error_found) {
-                // Cycle if packet received is fragmented
-                wait_lock.lock();
+            }*/
+            while (true) {
+                fragments_lock.lock();
                 try {
-                    for (int i = 1; i < this.fragments; i++)
-                        wait.await();
+                    if (this.packet_fragments.size() != 0) {
+                        this.fragments = packet_fragments.get(0).getFragments();
+                        break;
+                    }
                 } finally {
-                    wait_lock.unlock();
+                    fragments_lock.unlock();
                 }
-
-                // Defragment fragments
-                byte[] return_bytes;
-                if (this.packet_fragments.size() > 1)
-                    return_bytes = Defragment_Fragments();
-                else
-                    return_bytes = this.packet_fragments.iterator().next().getData();
-
-                // Send packet data to client
-                System.out.println("[WORKER " + worker_id + "] sending requested file to client " + socket.getInetAddress());
-                dos.write(return_bytes);
-            }
-            else {
-                System.out.println("[WORKER " + worker_id + "] sending error message in a file to client " + socket.getInetAddress());
-                String error_message = Serializer.Deserialize_String(this.packet_fragments.get(0).getData());
-                System.out.println("ERROR: " + error_message);
-                dos.write(Serializer.Serialize_String(error_message));
             }
 
+            // Cycle if packet received is fragmented
+/*            wait_lock.lock();
+            try {
+                for (int i = 1; i < this.fragments; i++) {
+                    System.out.println("ACORDERI");
+                    wait.await();
+                }
+            } finally {
+                wait_lock.unlock();
+            }*/
+            while (true) {
+                fragments_lock.lock();
+                try {
+                    if (this.packet_fragments.size() == this.fragments)
+                        break;
+                } finally {
+                    fragments_lock.unlock();
+                }
+            }
+
+            // Defragment fragments
+            byte[] return_bytes;
+            if (this.packet_fragments.size() > 1)
+                return_bytes = Defragment_Fragments();
+            else
+                return_bytes = this.packet_fragments.get(0).getData();
+
+            // Send packet data to client
+            System.out.println("[WORKER " + worker_id + "] sending requested file to client " + socket.getInetAddress());
+            dos.write(return_bytes);
             dos.flush();
             socket.close();
 
@@ -118,17 +125,8 @@ public class HttpGwWorker implements Runnable {
             // Set FastFileSrv used as available
             HttpGw.fast_files.get(address).setAvailability(true);
 
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    public void Signal_Fragment() {
-        this.wait_lock.lock();
-        try {
-            this.wait.signalAll();
-        } finally {
-            this.wait_lock.unlock();
         }
     }
 
@@ -141,18 +139,6 @@ public class HttpGwWorker implements Runnable {
         }
 
         System.out.println("[WORKER " + worker_id + "] received packet #" + fragment.getOffset()/Packet.Max_Data_Size);
-    }
-
-    public void Add_Error_Packet(Packet packet) {
-        fragments_lock.lock();
-        try {
-            this.error_found = true;
-            this.packet_fragments.add(0, packet);
-        } finally {
-            fragments_lock.unlock();
-        }
-
-        System.out.println("[WORKER " + worker_id + "] received error packet");
     }
 
     private byte[] Defragment_Fragments() {

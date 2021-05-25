@@ -6,7 +6,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class FastFileSrv {
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
         // IP address and port of HttpGw
         InetAddress gateway_address = InetAddress.getByName(args[0]);
         int gateway_port = Integer.parseInt(args[1]); // porta à qual se pretende ligar
@@ -74,13 +74,13 @@ public class FastFileSrv {
                     byte_offset += buf1.length;
                     bytes_left -= buf1.length;
 
-                    Thread.sleep(1000);   // TODO : APAGAR ISTO
+                    //Thread.sleep(1000);   // TODO : APAGAR ISTO
                 }
             }
             else {
                 // Create an error packet and send it
-                byte[] buf1 = Serializer.Serialize_String("Invalid Path!\n");
-                packet = new Packet(packet_id, PacketType.ERROR, 0, 1, buf1);
+                byte[] buf1 = Serializer.Serialize_String("");
+                packet = new Packet(packet_id, PacketType.DATA, 0, 1, buf1);
                 byte[] buf2 = Serializer.Serialize_Packet(packet);
                 data_packet = new DatagramPacket(buf2, buf2.length, gateway_address, gateway_port);
                 data_socket1.send(data_packet);

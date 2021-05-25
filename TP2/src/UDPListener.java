@@ -60,14 +60,6 @@ public class UDPListener implements Runnable {
                     System.out.println("[UDPLISTENER] Received packet with file data from " + fast_file_address);
                     int packet_id = packet.getId();
                     HttpGw.http_workers.get(packet_id).Add_Fragment(packet);
-                    HttpGw.http_workers.get(packet_id).Signal_Fragment();
-                }
-                else if (packet_type == PacketType.ERROR) {
-                    // Process data packet
-                    System.out.println("[UDPLISTENER] Received error packet from " + fast_file_address);
-                    int packet_id = packet.getId();
-                    HttpGw.http_workers.get(packet_id).Add_Error_Packet(packet);
-                    HttpGw.http_workers.get(packet_id).Signal_Fragment();
                 }
 
             } catch (IOException e) {
